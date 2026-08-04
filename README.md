@@ -21,6 +21,8 @@ The `./code/` directory contains all scripts used for the analyses reported in t
 
 The `./data/` directory contains scRNA-seq expression matrices, cell labels, model input files and reference data used in the benchmark. 
 
+The quality-controlled scRNA-seq expression matrices are available through Zenodo at https://doi.org/10.5281/zenodo.21774476. After downloading and extracting the files, place them under  `./data/expression_matrices/`.
+
 ## Result
 
 The `./result/` directory contains the processed results generated in this study, including:
