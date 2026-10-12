@@ -25,7 +25,7 @@ source_file <- paste0(
   "variance_decomposition.xlsx"
 )
 
-out_dir <- "../scGEM_benchmark/result"
+out_dir <- "../scGEM_benchmark/R_figures"
 
 dir.create(
   out_dir,
@@ -188,21 +188,13 @@ p <- ggplot(
   scale_fill_manual(
     values = factor_colors
   ) +
-  
   scale_y_continuous(
-    limits = c(
-      0,
-      100
-    ),
-    breaks = seq(
-      0,
-      100,
-      by = 20
-    ),
-    expand = c(
-      0,
-      0
-    )
+    breaks = seq(0, 100, by = 20),
+    expand = c(0, 0)
+  ) +
+  
+  coord_cartesian(
+    ylim = c(0, 100)
   ) +
   
   labs(

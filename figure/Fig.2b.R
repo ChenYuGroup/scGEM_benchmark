@@ -31,10 +31,14 @@ library(rvg)
 # 1. File paths
 # ==============================
 
-file <- "../scGEM_benchmark/result/accuracy_performance.xlsx"
 
+file <- "../scGEM_benchmark/result/accuracy_performanc.xlsx"
+out_dir <- "../scGEM_benchmark/R_figures"
 
-dir.create(out_dir, recursive = TRUE, showWarnings = FALSE)
+if (!dir.exists(out_dir)) {
+  dir.create(out_dir, recursive = TRUE)
+}
+
 
 # ==============================
 # 2. Read Raw_scores
@@ -470,6 +474,65 @@ make_one_factor_plot_small <- function(df_metric, factor_name, show_y_axis = FAL
       plot.margin = margin(1.5, 1.5, 1.5, 1.5)
     )
 }
+
+# ==============================
+# Create slide 9: 5 rows × 3 columns
+# ==============================
+
+selected_metrics <- c(
+  "Housekeeping gene (2022)",
+  "Metabolic task",
+  "Marker gene",
+  "Cluster performance (ARI)",
+  "Essential gene"
+)
+
+# 检查所选指标是否存在
+missing_metrics <- setdiff(selected_metrics, unique(all_long$Metric))
+
+if (length(missing_metrics) > 0) {
+  stop("以下指标未找到：", paste(missing_metrics, collapse = ", "))
+}
+
+# 顶部列标题：左侧留空，其余为 MEM / Data / Threshold
+slide9_panels <- list(
+  make_text_panel(""),
+  make_text_panel("MEM", size = 10),
+  make_text_panel("Data", size = 10),
+  make_text_panel("Threshold", size = 10)
+)
+
+# 每行：纵向指标名称 + 3 个子图
+for (met in selected_metrics) {
+  
+  df_metric <- all_long %>%
+    filter(Metric == met)
+  
+  slide9_panels <- c(
+    slide9_panels,
+    list(
+      make_text_panel(met, size = 7, angle = 90),
+      make_one_factor_plot_small(
+        df_metric, "MEM", show_y_axis = TRUE
+      ),
+      make_one_factor_plot_small(
+        df_metric, "Data", show_y_axis = TRUE
+      ),
+      make_one_factor_plot_small(
+        df_metric, "Threshold", show_y_axis = TRUE
+      )
+    )
+  )
+}
+
+p_slide9 <- wrap_plots(
+  slide9_panels,
+  ncol = 4,
+  byrow = TRUE,
+  widths = c(0.14, 1, 1, 1),
+  heights = c(0.15, rep(1, length(selected_metrics)))
+)
+
 
 # ==============================
 # 10. Create PPTX with 9 slides

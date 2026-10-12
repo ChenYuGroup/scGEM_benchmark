@@ -30,8 +30,8 @@ library(rvg)
 # ==============================
 
 file <- "../scGEM_benchmark/result/accuracy_performance.xlsx"
+out_dir <- "../scGEM_benchmark/R_figures/"
 
-out_dir <- "../scGEM_benchmark/result"
 
 dir.create(out_dir, recursive = TRUE, showWarnings = FALSE)
 
@@ -51,7 +51,17 @@ size_sheets <- c(
 # 3. Define metric columns
 # ==============================
 
-metric_cols <- list(
+# Raw_scores 工作表：指标分数
+score_metric_cols <- list(
+  "Housekeeping genes"     = 14:22,
+  "Metabolic tasks"        = 32:40,
+  "Marker genes"           = 41:50,
+  "Clustering performance" = 51:59,
+  "Essential genes"        = 69:73
+)
+
+# rxns、genes、mets 工作表：模型大小
+size_metric_cols <- list(
   "Housekeeping genes"     = 5:13,
   "Metabolic tasks"        = 14:22,
   "Marker genes"           = 23:32,
@@ -143,9 +153,9 @@ read_score_sheet <- function() {
   colnames(meta) <- c("Strategy", "MEM", "Data", "Threshold")
   meta <- as.data.frame(meta)
   
-  df_list <- lapply(names(metric_cols), function(m) {
+  df_list <- lapply(names(score_metric_cols), function(m) {
     
-    cols <- metric_cols[[m]]
+    cols <- score_metric_cols[[m]]
     
     tmp <- bind_cols(
       meta,
@@ -202,9 +212,9 @@ read_size_sheet <- function(sheet_name, size_feature) {
   colnames(meta) <- c("Strategy", "MEM", "Data", "Threshold")
   meta <- as.data.frame(meta)
   
-  df_list <- lapply(names(metric_cols), function(m) {
+  df_list <- lapply(names(size_metric_cols), function(m) {
     
-    cols <- metric_cols[[m]]
+    cols <- size_metric_cols[[m]]
     
     tmp <- bind_cols(
       meta,
@@ -386,6 +396,33 @@ make_correlation_plot <- function(
     facet_grid(
       Metric ~ SizeFeature,
       scales = "free"
+    ) +
+    ggh4x::facetted_pos_scales(
+      y = list(
+        # 前三个指标：0–100，上下留白
+        Metric %in% c(
+          "Housekeeping genes",
+          "Metabolic tasks",
+          "Marker genes"
+        ) ~ scale_y_continuous(
+          limits = c(0, 100),
+          breaks = c(0, 25, 50, 75, 100),
+          labels = function(x) sprintf("%.0f", x),
+          expand = expansion(mult = c(0.04, 0.04))
+        ),
+        
+        # 聚类表现：保留自动范围，小数刻度
+        Metric == "Clustering performance" ~ scale_y_continuous(
+          labels = function(x) sprintf("%.1f", x),
+          expand = expansion(mult = c(0.05, 0.05))
+        ),
+        
+        # 必需基因：保留自动范围，小数刻度
+        Metric == "Essential genes" ~ scale_y_continuous(
+          labels = function(x) sprintf("%.1f", x),
+          expand = expansion(mult = c(0.05, 0.05))
+        )
+      )
     ) +
     scale_color_manual(
       values = group_colors,

@@ -14,7 +14,8 @@ library(grid)
 
 
 file <- "../scGEM_benchmark/result/accuracy_performance.xlsx"
-out_dir <- "../scGEM_benchmark/result/dataset_correlation_heatmaps"
+out_dir <- "../scGEM_benchmark/R_figures/dataset_correlation_heatmaps"
+
 dir.create(out_dir, recursive = TRUE, showWarnings = FALSE)
 
 raw <- read_excel(file, sheet = "Raw_scores", col_names = FALSE)
@@ -27,11 +28,11 @@ meta <- as.data.frame(meta) %>%
   filter(!is.na(Strategy), Strategy != "")
 
 metric_cols <- list(
-  "Housekeeping genes"     = 5:13,
-  "Metabolic tasks"        = 14:22,
-  "Marker genes"           = 23:32,
-  "Clustering performance" = 33:41,
-  "Essential genes"        = 42:46
+  "Housekeeping genes"     = 14:22,
+  "Metabolic tasks"        = 32:40,
+  "Marker genes"           = 41:50,
+  "Clustering performance" = 51:59,
+  "Essential genes"        = 69:73
 )
 
 extract_metric_matrix <- function(metric_name, cols) {

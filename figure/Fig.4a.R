@@ -25,11 +25,13 @@ library(rvg)
 # ==============================
 
 source_file <- paste0(
-  "../scGEM_benchmark/result/",
+  "../scGEM_benchmark/R_figures/",
   "Kendall_W_ranking_agreement.xlsx"
 )
 
-out_dir <- "../scGEM_benchmark/result"
+
+out_dir <- "../scGEM_benchmark/R_figures"
+
 
 dir.create(
   out_dir,

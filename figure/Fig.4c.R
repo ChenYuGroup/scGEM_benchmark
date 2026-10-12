@@ -25,8 +25,7 @@ library(rvg)
 # ==============================
 
 file <- "../scGEM_benchmark/result/accuracy_performance.xlsx"
-
-out_dir <- "../scGEM_benchmark/result/"
+out_dir <- "../scGEM_benchmark/R_figures/"
 
 if (!dir.exists(out_dir)) {
   dir.create(out_dir, recursive = TRUE)

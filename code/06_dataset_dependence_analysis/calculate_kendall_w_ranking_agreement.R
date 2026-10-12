@@ -16,9 +16,9 @@ library(writexl)
 # ------------------------------
 # 1. File paths
 # ------------------------------
-file <- "../scGEM_benchmark/result/accuracy_performance.xlsx"
+file <- "C:/Users/jjyan/Documents/GitHub/scGEM_benchmark_NCS/result/accuracy_performance_NCS.xlsx"
+out_dir <- "C:/Users/jjyan/Documents/GitHub/scGEM_benchmark_NCS/R_figures"
 
-out_dir <- "../scGEM_benchmark/result"
 
 if (!dir.exists(out_dir)) {
   dir.create(
@@ -72,11 +72,11 @@ strategy_names <- as.character(
 # 3. Metric column ranges
 # ------------------------------
 metric_cols <- list(
-  "Housekeeping genes"     = 5:13,
-  "Metabolic tasks"        = 14:22,
-  "Marker genes"           = 23:32,
-  "Clustering performance" = 33:41,
-  "Essential genes"        = 42:46
+  "Housekeeping genes"     = 14:22,
+  "Metabolic tasks"        = 32:40,
+  "Marker genes"           = 41:50,
+  "Clustering performance" = 51:59,
+  "Essential genes"        = 69:73
 )
 
 # ------------------------------

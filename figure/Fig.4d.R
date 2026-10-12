@@ -31,9 +31,8 @@ library(rvg)
 # ==============================
 # 1. File paths
 # ==============================
-file <- "../scGEM_benchmark/result/accuracy_performance.xlsx"
-
-out_dir <- "../scGEM_benchmark/result/"
+file <- "../scGEM_benchmark_NCS/result/accuracy_performance.xlsx"
+out_dir <- "../scGEM_benchmark/R_figures/"
 
 
 if (!dir.exists(out_dir)) {

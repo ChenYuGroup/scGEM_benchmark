@@ -27,9 +27,8 @@ library(rvg)
 # 1. File paths
 # ==============================
 
-file <- "../scGEM_benchmark/result/accuracy_performance.xlsx"
-
-out_dir <- "../scGEM_benchmark/result"
+file <- "../scGEM_benchmark_NCS/result/accuracy_performance.xlsx"
+out_dir <- "../scGEM_benchmark/R_figures/"
 
 if (!dir.exists(out_dir)) {
   dir.create(out_dir, recursive = TRUE)
@@ -47,12 +46,21 @@ size_sheets <- c(
   "Metabolites" = "mets"
 )
 
-
 # ==============================
 # 3. Metric columns
 # ==============================
 
-metric_cols <- list(
+# Raw_scores 工作表
+score_metric_cols <- list(
+  "Housekeeping genes"     = 14:22,
+  "Metabolic tasks"        = 32:40,
+  "Marker genes"           = 41:50,
+  "Clustering performance" = 51:59,
+  "Essential genes"        = 69:73
+)
+
+# rxns、genes、mets 工作表
+size_metric_cols <- list(
   "Housekeeping genes"     = 5:13,
   "Metabolic tasks"        = 14:22,
   "Marker genes"           = 23:32,
@@ -99,9 +107,9 @@ read_score_sheet <- function() {
   colnames(meta) <- c("Strategy", "MEM", "Data", "Threshold")
   meta <- as.data.frame(meta)
   
-  df_list <- lapply(names(metric_cols), function(m) {
+  df_list <- lapply(names(score_metric_cols), function(m) {
     
-    cols <- metric_cols[[m]]
+    cols <- score_metric_cols[[m]]
     
     tmp <- bind_cols(
       meta,
@@ -171,9 +179,9 @@ read_size_sheet <- function(sheet_name, size_feature) {
   colnames(meta) <- c("Strategy", "MEM", "Data", "Threshold")
   meta <- as.data.frame(meta)
   
-  df_list <- lapply(names(metric_cols), function(m) {
+  df_list <- lapply(names(size_metric_cols), function(m) {
     
-    cols <- metric_cols[[m]]
+    cols <- size_metric_cols[[m]]
     
     tmp <- bind_cols(
       meta,
@@ -238,6 +246,7 @@ size_long <- bind_rows(
   read_size_sheet(size_sheets["Genes"],       "Genes"),
   read_size_sheet(size_sheets["Metabolites"], "Metabolites")
 )
+
 
 df <- score_long %>%
   inner_join(
@@ -668,14 +677,23 @@ make_compare_plot <- function(size_features_keep, plot_title_suffix = NULL) {
     theme(
       text = element_text(family = "Helvetica", size = 6),
       plot.title = element_text(hjust = 0.5, face = "bold", size = 8),
-      strip.background = element_rect(fill = "#D9D5E5", color = "grey40", linewidth = 0.35),
+      strip.background = element_rect(
+        fill = "#D9D5E5",
+        color = "grey40",
+        linewidth = 0.35
+      ),
       strip.text.x = element_text(face = "bold", size = 6),
       strip.text.y = element_text(face = "bold", size = 6, angle = 90),
       panel.grid.major.x = element_blank(),
       panel.grid.minor = element_blank(),
       panel.grid.major.y = element_line(color = "grey88", linewidth = 0.20),
       panel.border = element_rect(color = "grey45", linewidth = 0.35),
-      axis.text.x = element_text(angle = 45, hjust = 1, size = 5.5, color = "black"),
+      axis.text.x = element_text(
+        angle = 45,
+        hjust = 1,
+        size = 5.5,
+        color = "black"
+      ),
       axis.text.y = element_text(size = 5.5, color = "black"),
       axis.title.y = element_text(size = 6, face = "bold"),
       axis.ticks = element_line(linewidth = 0.25, color = "black"),
@@ -714,11 +732,29 @@ fig_height <- 8 / 2.54
 
 ppt <- read_pptx() %>%
   add_slide(layout = "Blank", master = "Office Theme") %>%
-  ph_with(dml(ggobj = p_all), location = ph_location(left = 0, top = 0, width = fig_width, height = fig_height)) %>%
+  ph_with(
+    dml(ggobj = p_all),
+    location = ph_location(
+      left = 0, top = 0,
+      width = fig_width, height = fig_height
+    )
+  ) %>%
   add_slide(layout = "Blank", master = "Office Theme") %>%
-  ph_with(dml(ggobj = p_rg), location = ph_location(left = 0, top = 0, width = fig_width, height = fig_height)) %>%
+  ph_with(
+    dml(ggobj = p_rg),
+    location = ph_location(
+      left = 0, top = 0,
+      width = fig_width, height = fig_height
+    )
+  ) %>%
   add_slide(layout = "Blank", master = "Office Theme") %>%
-  ph_with(dml(ggobj = p_met), location = ph_location(left = 0, top = 0, width = fig_width, height = fig_height))
+  ph_with(
+    dml(ggobj = p_met),
+    location = ph_location(
+      left = 0, top = 0,
+      width = fig_width, height = fig_height
+    )
+  )
 
 print(ppt, target = ppt_file)
 

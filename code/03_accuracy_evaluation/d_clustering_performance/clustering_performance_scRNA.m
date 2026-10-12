@@ -57,7 +57,7 @@ clusterLabels = cluster(Z, 'maxclust', num_clusters); % Cut the hierarchy accord
 
 
 % Calculate the ARI (Adjusted Rand Index) 
-ari = rand_index(trueLabels, clusterLabels);
+ari = rand_index(trueLabels, clusterLabels, 'adjusted');
 fprintf('Adjusted Rand Index (ARI): %.4f\n', ari);
 
 % Calculate the NMI (Normalized Mutual Information)

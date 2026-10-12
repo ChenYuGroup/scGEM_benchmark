@@ -17,13 +17,13 @@ library(rvg)
 # 1. File paths
 # ==============================
 
-file <- "../scGEM_benchmark/result/accuracy_performance.xlsx"
 
+file <- "C:/Users/jjyan/Documents/GitHub/scGEM_benchmark_NCS/result/accuracy_performance_NCS.xlsx"
+out_dir <- "C:/Users/jjyan/Documents/GitHub/scGEM_benchmark_NCS/R_figures"
 
 if (!dir.exists(out_dir)) {
   dir.create(out_dir, recursive = TRUE)
 }
-
 # ==============================
 # 2. Read Excel
 # ==============================

@@ -1,11 +1,8 @@
 # ============================================================
 # Variance decomposition of ARI-based clustering performance
 #
-# Input:
-# ARI_variance_decomposition.xlsx
-#
-# Output:
-# Editable PowerPoint
+# Each stacked bar is normalized to 100%
+# Output: Editable PowerPoint
 # ============================================================
 
 library(readxl)
@@ -20,11 +17,11 @@ library(rvg)
 # ==============================
 
 source_file <- paste0(
-    "../scGEM_benchmark/result/",
+  "../scGEM_benchmark/result/",
   "variance_decomposition.xlsx"
 )
 
-out_dir <- "../scGEM_benchmark/result"
+out_dir <- "C:/Users/jjyan/Documents/GitHub/scGEM_benchmark_NCS/R_figures"
 
 dir.create(
   out_dir,
@@ -38,16 +35,11 @@ out_file <- file.path(
 )
 
 if (!file.exists(source_file)) {
-  stop(
-    paste(
-      "Input file was not found:",
-      source_file
-    )
-  )
+  stop("Input file was not found: ", source_file)
 }
 
 # ==============================
-# 2. Read ARI variance data
+# 2. Read and normalize data
 # ==============================
 
 df <- read_excel(
@@ -55,7 +47,6 @@ df <- read_excel(
   sheet = "ARI_variance"
 )
 
-# Check required columns
 required_columns <- c(
   "Dataset",
   "MEM",
@@ -71,44 +62,73 @@ missing_columns <- setdiff(
 
 if (length(missing_columns) > 0) {
   stop(
-    paste(
-      "Missing required columns:",
-      paste(
-        missing_columns,
-        collapse = ", "
-      )
-    )
+    "Missing required columns: ",
+    paste(missing_columns, collapse = ", ")
   )
 }
 
-# Retain and format the required columns
+factor_columns <- c(
+  "MEM",
+  "Data",
+  "Threshold",
+  "Residual"
+)
+
 df <- df %>%
-  select(
-    Dataset,
-    MEM,
-    Data,
-    Threshold,
-    Residual
-  ) %>%
-  filter(
-    !is.na(Dataset)
-  ) %>%
+  select(all_of(required_columns)) %>%
+  filter(!is.na(Dataset)) %>%
   mutate(
-    Dataset = as.character(Dataset),
+    Dataset = trimws(as.character(Dataset)),
+    across(all_of(factor_columns), as.numeric)
+  ) %>%
+  filter(Dataset != "")
+
+# Check values before normalization
+value_matrix <- as.matrix(df[, factor_columns])
+
+invalid_rows <- apply(
+  value_matrix,
+  1,
+  function(x) any(!is.finite(x) | x < 0)
+)
+
+if (any(invalid_rows)) {
+  stop(
+    "Missing, non-finite, or negative values in datasets: ",
+    paste(df$Dataset[invalid_rows], collapse = ", ")
+  )
+}
+
+row_totals <- rowSums(value_matrix)
+
+if (any(row_totals <= 0)) {
+  stop(
+    "The total variance contribution must be positive: ",
+    paste(df$Dataset[row_totals <= 0], collapse = ", ")
+  )
+}
+
+# Normalize each dataset to 100%
+df <- df %>%
+  mutate(
+    OriginalSum = row_totals,
     across(
-      c(MEM, Data, Threshold, Residual),
-      as.numeric
+      all_of(factor_columns),
+      ~ .x / OriginalSum * 100
     )
   )
 
-# Check whether each row sums to 100%
+# Print totals before and after normalization
 print(
   df %>%
     mutate(
-      CheckSum = MEM + Data + Threshold + Residual
+      CheckSum = rowSums(
+        across(all_of(factor_columns))
+      )
     ) %>%
     select(
       Dataset,
+      OriginalSum,
       CheckSum
     )
 )
@@ -119,12 +139,7 @@ print(
 
 df_long <- df %>%
   pivot_longer(
-    cols = c(
-      MEM,
-      Data,
-      Threshold,
-      Residual
-    ),
+    cols = all_of(factor_columns),
     names_to = "Factor",
     values_to = "Variance"
   )
@@ -145,6 +160,12 @@ dataset_order <- c(
   "SKCM"
 )
 
+# Retain any additional datasets
+dataset_order <- c(
+  dataset_order,
+  setdiff(unique(df$Dataset), dataset_order)
+)
+
 df_long$Dataset <- factor(
   df_long$Dataset,
   levels = dataset_order
@@ -152,12 +173,7 @@ df_long$Dataset <- factor(
 
 df_long$Factor <- factor(
   df_long$Factor,
-  levels = c(
-    "MEM",
-    "Data",
-    "Threshold",
-    "Residual"
-  )
+  levels = factor_columns
 )
 
 # ==============================
@@ -183,51 +199,36 @@ p <- ggplot(
     fill = Factor
   )
 ) +
-  
   geom_col(
     width = 0.70,
     color = "white",
     linewidth = 0.25
   ) +
-  
   scale_fill_manual(
     values = factor_colors
   ) +
-  
   scale_y_continuous(
-    limits = c(
-      0,
-      100
-    ),
-    breaks = seq(
-      0,
-      100,
-      by = 20
-    ),
-    expand = c(
-      0,
-      0
-    )
+    breaks = seq(0, 100, by = 20),
+    expand = c(0, 0)
   ) +
-  
+  coord_cartesian(
+    ylim = c(0, 100)
+  ) +
   labs(
     title = "Clustering performance (ARI)",
     x = NULL,
     y = "Proportion of variance explained (%)",
     fill = NULL
   ) +
-  
   theme_classic(
     base_size = 6,
     base_family = "Helvetica"
   ) +
-  
   theme(
     text = element_text(
       family = "Helvetica",
       size = 6
     ),
-    
     plot.title = element_text(
       size = 7,
       face = "bold",
@@ -235,7 +236,6 @@ p <- ggplot(
       family = "Helvetica",
       color = "black"
     ),
-    
     axis.text.x = element_text(
       angle = 35,
       hjust = 1,
@@ -244,49 +244,40 @@ p <- ggplot(
       family = "Helvetica",
       color = "black"
     ),
-    
     axis.text.y = element_text(
       size = 6,
       family = "Helvetica",
       color = "black"
     ),
-    
     axis.title.y = element_text(
       size = 6,
       family = "Helvetica",
       face = "bold",
       color = "black"
     ),
-    
     axis.line = element_line(
       linewidth = 0.30,
       color = "black"
     ),
-    
     axis.ticks = element_line(
       linewidth = 0.25,
       color = "black"
     ),
-    
     legend.position = "top",
     legend.direction = "horizontal",
-    
     legend.text = element_text(
       size = 6,
       family = "Helvetica",
       color = "black"
     ),
-    
-    legend.key.size = unit(
+    legend.key.size = grid::unit(
       0.30,
       "cm"
     ),
-    
-    legend.spacing.x = unit(
+    legend.spacing.x = grid::unit(
       0.12,
       "cm"
     ),
-    
     plot.margin = margin(
       3,
       3,
@@ -301,10 +292,10 @@ print(p)
 # 7. Save editable PowerPoint
 # ==============================
 
-figure_width_cm  <- 9
+figure_width_cm <- 9
 figure_height_cm <- 7
 
-figure_width_in  <- figure_width_cm / 2.54
+figure_width_in <- figure_width_cm / 2.54
 figure_height_in <- figure_height_cm / 2.54
 
 ppt <- read_pptx() %>%
@@ -313,9 +304,7 @@ ppt <- read_pptx() %>%
     master = "Office Theme"
   ) %>%
   ph_with(
-    dml(
-      ggobj = p
-    ),
+    dml(ggobj = p),
     location = ph_location(
       left = 0,
       top = 0,
